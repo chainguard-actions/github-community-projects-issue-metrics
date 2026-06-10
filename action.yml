@@ -1,0 +1,10 @@
+---
+name: "issue-metrics"
+author: "github"
+description: "A GitHub Action to report out issue metrics"
+runs:
+  using: "docker"
+  image: "docker://ghcr.io/github-community-projects/issue_metrics@sha256:0a3825e9a0af5404b1e28885d48b77eb7f0e0ccbff20ec599db66d616d394119" # v4
+branding:
+  icon: "check-square"
+  color: "white"
