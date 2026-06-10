@@ -1,8 +1,10 @@
+<!-- markdownlint-disable -->
+
 # Hardening Report: github-community-projects--issue-metrics/v4.2.7
 
 > This file was generated automatically by the hardening agent.
 
-**Policy SHA:** `ff50f15e4b79bfbf764dafdfd2579175a6ea9771`
+**Policy SHA:** `d636be7e43ef829af6e853da6b3c7566db9f72fe`
 
 **Test Policy SHA:** `843adf9e4b8f85d0c08b27b9d0b09dd094b54702`
 
@@ -14,11 +16,11 @@ Action **github-community-projects--issue-metrics/v4.2.7** was hardened automati
 
 ### unpinned-uses (severity: high)
 
-The action.yml uses a Docker image pinned to a mutable tag (`v4`) instead of an immutable SHA digest. The reference `docker://ghcr.io/github-community-projects/issue_metrics:v4` can be silently updated to point to a different (potentially malicious) image without any change to this action file, creating a supply-chain risk. It should be replaced with a SHA digest reference such as `docker://ghcr.io/github-community-projects/issue_metrics@sha256:<64-hex-char-digest>`
+The action.yml references a Docker image using a mutable tag (`v4`) instead of an immutable SHA digest. This means the image pulled at runtime could change without notice, enabling supply-chain attacks. The failing reference is: `image: "docker://ghcr.io/github-community-projects/issue_metrics:v4"`. It should be pinned to a specific SHA digest, e.g. `image: "docker://ghcr.io/github-community-projects/issue_metrics@sha256:<64-hex-char-digest>"`.
 
 Locations:
 
-- `action.yml:6`
+- `action.yml:7`
 
 ## Iteration Notes
 
@@ -28,5 +30,5 @@ Locations:
 
 **Notes:**
 
-Replaced the mutable Docker image tag `ghcr.io/github-community-projects/issue_metrics:v4` with the immutable SHA256 digest reference `ghcr.io/github-community-projects/issue_metrics@sha256:0a3825e9a0af5404b1e28885d48b77eb7f0e0ccbff20ec599db66d616d394119` in action.yml line 6. The original tag `v4` is preserved as a comment outside the YAML quotes for readability.
+Replaced the mutable Docker image tag `ghcr.io/github-community-projects/issue_metrics:v4` with the immutable SHA digest `ghcr.io/github-community-projects/issue_metrics@sha256:0a3825e9a0af5404b1e28885d48b77eb7f0e0ccbff20ec599db66d616d394119` in action.yml line 7. The original tag `v4` is preserved as a comment outside the YAML string for readability.
 
