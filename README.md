@@ -9,6 +9,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
 | v4.2.3 | [`v4.2.3`](https://github.com/chainguard-actions/github-community-projects-issue-metrics/tree/v4.2.3) | [`816c688`](https://github.com/github-community-projects/issue-metrics/commit/816c68841c0863d43f8157eed87e2c76f4ceb934) |
+| v4.2.4 | [`v4.2.4`](https://github.com/chainguard-actions/github-community-projects-issue-metrics/tree/v4.2.4) | [`9b1f360`](https://github.com/github-community-projects/issue-metrics/commit/9b1f360935d77e00b4ef6353216a3b46eafb70c4) |
 | v4.2.5 | [`v4.2.5`](https://github.com/chainguard-actions/github-community-projects-issue-metrics/tree/v4.2.5) | [`7d11f06`](https://github.com/github-community-projects/issue-metrics/commit/7d11f06fad8611f09f067325c1ed4b363c18a90b) |
 | v4.2.6 | [`v4.2.6`](https://github.com/chainguard-actions/github-community-projects-issue-metrics/tree/v4.2.6) | [`5719e05`](https://github.com/github-community-projects/issue-metrics/commit/5719e05f8e51054eb48a28b809a5ee7b740d83a1) |
 | v4.2.7 | [`v4.2.7`](https://github.com/chainguard-actions/github-community-projects-issue-metrics/tree/v4.2.7) | [`1e38d5e`](https://github.com/github-community-projects/issue-metrics/commit/1e38d5e62363e14db8019ed7d106b9855bdba6cc) |
