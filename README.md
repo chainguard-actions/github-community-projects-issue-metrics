@@ -13,6 +13,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v4.2.5 | [`v4.2.5`](https://github.com/chainguard-actions/github-community-projects-issue-metrics/tree/v4.2.5) | [`7d11f06`](https://github.com/github-community-projects/issue-metrics/commit/7d11f06fad8611f09f067325c1ed4b363c18a90b) |
 | v4.2.6 | [`v4.2.6`](https://github.com/chainguard-actions/github-community-projects-issue-metrics/tree/v4.2.6) | [`5719e05`](https://github.com/github-community-projects/issue-metrics/commit/5719e05f8e51054eb48a28b809a5ee7b740d83a1) |
 | v4.2.7 | [`v4.2.7`](https://github.com/chainguard-actions/github-community-projects-issue-metrics/tree/v4.2.7) | [`1e38d5e`](https://github.com/github-community-projects/issue-metrics/commit/1e38d5e62363e14db8019ed7d106b9855bdba6cc) |
+| v4.2.8 | [`v4.2.8`](https://github.com/chainguard-actions/github-community-projects-issue-metrics/tree/v4.2.8) | [`44173f9`](https://github.com/github-community-projects/issue-metrics/commit/44173f9e0a3b2144a777a10a340e4c09a25ac9f8) |
 
 ## Privacy
 
