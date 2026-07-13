@@ -1,0 +1,26 @@
+name: Test error handling - missing GH_TOKEN
+on:
+  workflow_dispatch:
+
+jobs:
+  test-missing-token:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run issue-metrics action without GH_TOKEN (expect failure)
+        id: action
+        uses: .
+        continue-on-error: true
+        env:
+          SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue"
+          GH_TOKEN: ""
+
+      - name: Assert action failed due to missing token
+        run: |
+          echo "Action outcome: ${{ steps.action.outcome }}"
+          if [ "${{ steps.action.outcome }}" != "failure" ]; then
+            echo "FAIL: Expected action to fail when GH_TOKEN is not set, but got: ${{ steps.action.outcome }}"
+            exit 1
+          fi
+          echo "PASS: Action correctly failed when GH_TOKEN was not provided"
