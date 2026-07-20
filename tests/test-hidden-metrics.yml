@@ -1,4 +1,4 @@
-name: Test basic usage
+name: Test hidden metrics
 on:
   workflow_dispatch:
 jobs:
@@ -11,7 +11,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue is:closed created:2024-01-01..2024-01-31"
-          REPORT_TITLE: "Test Issue Metrics Report"
+          REPORT_TITLE: "Hidden Metrics Test"
+          HIDE_TIME_TO_CLOSE: "true"
+          HIDE_TIME_TO_FIRST_RESPONSE: "true"
+          HIDE_AUTHOR: "true"
       - name: Assert output file exists
         run: |
           echo "Checking for issue_metrics.md..."
@@ -20,12 +23,17 @@ jobs:
             exit 1
           fi
           echo "PASS: issue_metrics.md exists"
-      - name: Assert output file contains expected content
+      - name: Assert hidden columns are absent
         run: |
           echo "Contents of issue_metrics.md:"
           cat "$GITHUB_WORKSPACE/issue_metrics.md"
-          if ! grep -q "Test Issue Metrics Report" "$GITHUB_WORKSPACE/issue_metrics.md"; then
-            echo "FAIL: report title not found in output"
+          if grep -q "Time to Close" "$GITHUB_WORKSPACE/issue_metrics.md"; then
+            echo "FAIL: 'Time to Close' should be hidden but was found in output"
             exit 1
           fi
-          echo "PASS: report title found in output"
+          echo "PASS: 'Time to Close' is correctly hidden"
+          if grep -q "Time to First Response" "$GITHUB_WORKSPACE/issue_metrics.md"; then
+            echo "FAIL: 'Time to First Response' should be hidden but was found in output"
+            exit 1
+          fi
+          echo "PASS: 'Time to First Response' is correctly hidden"

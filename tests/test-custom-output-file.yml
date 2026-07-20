@@ -1,0 +1,32 @@
+name: Test custom output file
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue is:closed created:2024-01-01..2024-01-31"
+          OUTPUT_FILE: "custom_metrics_report.md"
+          REPORT_TITLE: "Custom Output Test"
+      - name: Assert custom output file exists
+        run: |
+          echo "Checking for custom_metrics_report.md..."
+          if [ ! -f "$GITHUB_WORKSPACE/custom_metrics_report.md" ]; then
+            echo "FAIL: custom_metrics_report.md was not created"
+            exit 1
+          fi
+          echo "PASS: custom_metrics_report.md exists"
+      - name: Assert custom output file contains expected content
+        run: |
+          echo "Contents of custom_metrics_report.md:"
+          cat "$GITHUB_WORKSPACE/custom_metrics_report.md"
+          if ! grep -q "Custom Output Test" "$GITHUB_WORKSPACE/custom_metrics_report.md"; then
+            echo "FAIL: report title not found in custom output file"
+            exit 1
+          fi
+          echo "PASS: report title found in custom output file"

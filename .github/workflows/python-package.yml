@@ -40,12 +40,12 @@ jobs:
           enable-cache: true
       - name: Set up Python ${{ matrix.python-version }}
         env:
-          PYTHON_VERSION: ${{ matrix.python-version }}
-        run: uv python install "$PYTHON_VERSION"
+          PY_VER: ${{ matrix.python-version }}
+        run: uv python install "$PY_VER"
       - name: Install dependencies
         env:
-          PYTHON_VERSION: ${{ matrix.python-version }}
-        run: uv sync --frozen --python "$PYTHON_VERSION"
+          PY_VER: ${{ matrix.python-version }}
+        run: uv sync --frozen --python "$PY_VER"
       - name: Lint with flake8 and pylint
         run: |
           make lint
