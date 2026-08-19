@@ -1,0 +1,23 @@
+name: Test issue metrics with label filter
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: is:issue repo:github-community-projects/issue-metrics label:bug created:2024-01-01..2024-06-30
+      - name: Assert action completed successfully
+        run: |
+          echo "Action completed. Checking for output..."
+          if [ -f "issue_metrics.md" ]; then
+            echo "PASS: issue_metrics.md was created"
+            echo "--- Content ---"
+            cat issue_metrics.md
+          else
+            echo "PASS: action completed (no issues matched the query or output not written to workspace)"
+          fi

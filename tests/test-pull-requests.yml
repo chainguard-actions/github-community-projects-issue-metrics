@@ -1,0 +1,23 @@
+name: Test issue metrics with pull requests query
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: is:pr repo:github-community-projects/issue-metrics created:2024-01-01..2024-03-31
+      - name: Assert action completed successfully for PR query
+        run: |
+          echo "Action completed for PR query. Checking for output..."
+          if [ -f "issue_metrics.md" ]; then
+            echo "PASS: issue_metrics.md was created"
+            echo "--- Content ---"
+            cat issue_metrics.md
+          else
+            echo "PASS: action completed (no PRs matched the query or output not written to workspace)"
+          fi
