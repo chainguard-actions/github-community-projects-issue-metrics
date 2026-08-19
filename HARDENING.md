@@ -8,27 +8,36 @@
 
 **Test Policy SHA:** `843adf9e4b8f85d0c08b27b9d0b09dd094b54702`
 
-**Harden Agent Version:** `1`
+**Harden Agent Version:** `2`
 
-Action **github-community-projects--issue-metrics/v4.2.7** was hardened automatically. 1 finding(s) were identified and resolved across 1 iteration(s).
+Action **github-community-projects--issue-metrics/v4.2.7** was hardened automatically. 2 finding(s) were identified and resolved across 1 iteration(s).
 
 ## Findings Fixed
 
 ### unpinned-uses (severity: high)
 
-The action.yml references a Docker image using a mutable tag (`v4`) instead of an immutable SHA digest. This means the image pulled at runtime could change without notice, enabling supply-chain attacks. The failing reference is: `image: "docker://ghcr.io/github-community-projects/issue_metrics:v4"`. It should be pinned to a specific SHA digest, e.g. `image: "docker://ghcr.io/github-community-projects/issue_metrics@sha256:<64-hex-char-digest>"`.
+The action.yml uses a Docker image pinned to a mutable tag (`v4`) rather than an immutable SHA digest. If the tag is moved to a different image, the action will silently execute different code. The reference `docker://ghcr.io/github-community-projects/issue_metrics:v4` should be replaced with a SHA-digest reference such as `docker://ghcr.io/github-community-projects/issue_metrics@sha256:<64-hex-char-digest>`.
 
 Locations:
 
 - `action.yml:7`
 
+### script-injection (severity: high)
+
+Sub-rule (a): `${{ matrix.python-version }}` is interpolated directly inside two `run:` shell command strings. GitHub Actions performs YAML template substitution before the shell ever sees the value, so any metacharacters in the expression value are parsed by the shell. Although `matrix.*` values are defined in the workflow itself, the check requires that no `${{ ... }}` expression appear directly inside a `run:` block. Offending lines: `run: uv python install ${{ matrix.python-version }}` and `run: uv sync --frozen --python ${{ matrix.python-version }}`. Fix by moving the value into an `env:` variable and referencing it as a quoted shell variable: `env: PYTHON_VERSION: ${{ matrix.python-version }}` then `run: uv python install "$PYTHON_VERSION"`.
+
+Locations:
+
+- `.github/workflows/python-package.yml:38`
+- `.github/workflows/python-package.yml:40`
+
 ## Iteration Notes
 
 ### Iteration 1
 
-**Fixes applied:** unpinned-uses
+**Fixes applied:** unpinned-uses, script-injection
 
 **Notes:**
 
-Replaced the mutable Docker image tag `ghcr.io/github-community-projects/issue_metrics:v4` with the immutable SHA digest `ghcr.io/github-community-projects/issue_metrics@sha256:0a3825e9a0af5404b1e28885d48b77eb7f0e0ccbff20ec599db66d616d394119` in action.yml line 7. The original tag `v4` is preserved as a comment outside the YAML string for readability.
+1. action.yml: Pinned the Docker image from `docker://ghcr.io/github-community-projects/issue_metrics:v4` to `docker://ghcr.io/github-community-projects/issue_metrics:v4@sha256:8a38489d7fcd68792af2956a1da35d56582a09b754bc94b4809eb79ae699de98`, preserving the docker:// scheme and tag inline. 2. .github/workflows/python-package.yml: Moved both `${{ matrix.python-version }}` expressions out of `run:` shell strings into `env:` blocks as `PYTHON_VERSION`, then referenced them as `"$PYTHON_VERSION"` in the shell commands to prevent script injection.
 

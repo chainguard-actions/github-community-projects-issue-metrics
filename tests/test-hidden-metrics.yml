@@ -1,0 +1,40 @@
+name: Test hidden metrics options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run issue-metrics action with hidden metrics
+        id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: repo:actions/checkout is:issue is:closed created:2020-01-01..2020-12-31
+          OUTPUT_FILE: ${{ github.workspace }}/issue_metrics.md
+          HIDE_TIME_TO_FIRST_RESPONSE: "true"
+          HIDE_TIME_TO_CLOSE: "true"
+          HIDE_ITEMS_CLOSED_COUNT: "true"
+          HIDE_AUTHOR: "true"
+          HIDE_ASSIGNEE: "true"
+      - name: Assert markdown report was created
+        run: |
+          echo "Checking for issue_metrics.md..."
+          if [ ! -f "$GITHUB_WORKSPACE/issue_metrics.md" ]; then
+            echo "FAIL: issue_metrics.md was not created"
+            exit 1
+          fi
+          echo "PASS: issue_metrics.md exists"
+          echo "--- Contents ---"
+          cat "$GITHUB_WORKSPACE/issue_metrics.md"
+      - name: Assert hidden metrics are not in the report
+        run: |
+          CONTENT=$(cat "$GITHUB_WORKSPACE/issue_metrics.md")
+          echo "actual content: $CONTENT"
+          # When time_to_first_response is hidden, the header should not appear
+          if echo "$CONTENT" | grep -q "Time to first response"; then
+            echo "FAIL: 'Time to first response' should be hidden but was found in report"
+            exit 1
+          fi
+          echo "PASS: hidden metrics are not present in the report"

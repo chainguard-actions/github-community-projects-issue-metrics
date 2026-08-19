@@ -1,0 +1,31 @@
+name: Test custom report title
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run issue-metrics action with custom report title
+        id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue is:closed created:2024-01-01..2024-01-02"
+          REPORT_TITLE: "My Custom Metrics Report"
+      - name: Assert output file exists and contains custom title
+        run: |
+          echo "Checking for issue_metrics.md output file..."
+          if [ ! -f issue_metrics.md ]; then
+            echo "FAIL: issue_metrics.md was not created"
+            exit 1
+          fi
+          echo "PASS: issue_metrics.md exists"
+          echo "--- File contents ---"
+          cat issue_metrics.md
+          echo "Checking for custom report title in output..."
+          if ! grep -q "My Custom Metrics Report" issue_metrics.md; then
+            echo "FAIL: Custom report title 'My Custom Metrics Report' not found in output"
+            exit 1
+          fi
+          echo "PASS: Custom report title found in output"

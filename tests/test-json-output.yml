@@ -1,0 +1,46 @@
+name: Test JSON output file creation
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run issue-metrics action
+        id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: repo:actions/checkout is:issue is:closed created:2020-01-01..2020-12-31
+          OUTPUT_FILE: ${{ github.workspace }}/issue_metrics.md
+      - name: Assert JSON metrics output was produced
+        env:
+          METRICS: ${{ steps.action.outputs.metrics }}
+        run: |
+          echo "actual metrics output: $METRICS"
+          if [ -z "$METRICS" ]; then
+            echo "FAIL: metrics output is empty"
+            exit 1
+          fi
+          echo "PASS: metrics output is non-empty"
+      - name: Assert JSON metrics output is valid JSON
+        env:
+          METRICS: ${{ steps.action.outputs.metrics }}
+        run: |
+          echo "Validating JSON..."
+          if ! echo "$METRICS" | python3 -m json.tool > /dev/null 2>&1; then
+            echo "FAIL: metrics output is not valid JSON"
+            echo "$METRICS"
+            exit 1
+          fi
+          echo "PASS: metrics output is valid JSON"
+      - name: Assert JSON metrics contains expected keys
+        env:
+          METRICS: ${{ steps.action.outputs.metrics }}
+        run: |
+          echo "actual content: $METRICS"
+          if ! echo "$METRICS" | python3 -c "import sys, json; data=json.load(sys.stdin); assert 'search_query' in data, 'missing search_query key'"; then
+            echo "FAIL: JSON does not contain expected 'search_query' key"
+            exit 1
+          fi
+          echo "PASS: JSON contains expected keys"
