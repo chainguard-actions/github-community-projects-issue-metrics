@@ -4,7 +4,7 @@ author: "github"
 description: "A GitHub Action to report out issue metrics"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/github-community-projects/issue_metrics@sha256:8a38489d7fcd68792af2956a1da35d56582a09b754bc94b4809eb79ae699de98" # v4
+  image: "docker://ghcr.io/github-community-projects/issue_metrics:v4@sha256:8a38489d7fcd68792af2956a1da35d56582a09b754bc94b4809eb79ae699de98"
 branding:
   icon: "check-square"
   color: "white"

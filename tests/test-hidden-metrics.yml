@@ -1,0 +1,44 @@
+name: Test hidden metrics
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue is:closed created:2024-01-01..2024-01-31"
+          REPORT_TITLE: "Hidden Metrics Test"
+          OUTPUT_FILE: "issue_metrics.md"
+          HIDE_TIME_TO_CLOSE: "true"
+          HIDE_TIME_TO_FIRST_RESPONSE: "true"
+          HIDE_ITEMS_CLOSED_COUNT: "true"
+
+      - name: Assert output file was created
+        run: |
+          echo "Checking for issue_metrics.md..."
+          if [ ! -f "issue_metrics.md" ]; then
+            echo "FAIL: issue_metrics.md was not created"
+            exit 1
+          fi
+          echo "PASS: issue_metrics.md exists"
+
+      - name: Assert hidden metrics are not in output
+        run: |
+          echo "Checking that hidden metrics are absent..."
+          if grep -qi "Time to Close" issue_metrics.md; then
+            echo "FAIL: 'Time to Close' found in output but should be hidden"
+            cat issue_metrics.md
+            exit 1
+          fi
+          if grep -qi "Time to First Response" issue_metrics.md; then
+            echo "FAIL: 'Time to First Response' found in output but should be hidden"
+            cat issue_metrics.md
+            exit 1
+          fi
+          echo "PASS: Hidden metrics are not present in output"

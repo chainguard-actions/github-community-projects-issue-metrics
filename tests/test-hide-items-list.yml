@@ -1,0 +1,42 @@
+name: Test hide items list
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue is:closed created:2024-01-01..2024-01-31"
+          REPORT_TITLE: "Summary Only Report"
+          OUTPUT_FILE: "issue_metrics.md"
+          HIDE_ITEMS_LIST: "true"
+
+      - name: Assert output file was created
+        run: |
+          echo "Checking for issue_metrics.md..."
+          if [ ! -f "issue_metrics.md" ]; then
+            echo "FAIL: issue_metrics.md was not created"
+            exit 1
+          fi
+          echo "PASS: issue_metrics.md exists"
+
+      - name: Assert report title is present
+        run: |
+          echo "Checking report title..."
+          if ! grep -q "Summary Only Report" issue_metrics.md; then
+            echo "FAIL: Report title not found in output"
+            cat issue_metrics.md
+            exit 1
+          fi
+          echo "PASS: Report title found in output"
+
+      - name: Show output file contents
+        run: |
+          echo "=== Output file contents ==="
+          cat issue_metrics.md
