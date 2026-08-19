@@ -1,0 +1,50 @@
+name: Test custom output file and report title
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up git origin reachable inside Docker container
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/act-harness
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+
+      - id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue created:2024-03-01..2024-03-31"
+          REPORT_TITLE: "My Custom Report Title"
+          OUTPUT_FILE: "custom_metrics_output.md"
+
+      - name: Assert custom output file was created
+        run: |
+          echo "Checking for custom_metrics_output.md..."
+          if [ ! -f "$GITHUB_WORKSPACE/custom_metrics_output.md" ]; then
+            echo "FAIL: custom_metrics_output.md was not created"
+            # Also check if default file was created instead
+            if [ -f "$GITHUB_WORKSPACE/issue_metrics.md" ]; then
+              echo "Note: default issue_metrics.md was created instead"
+              cat "$GITHUB_WORKSPACE/issue_metrics.md"
+            fi
+            exit 1
+          fi
+          echo "PASS: custom_metrics_output.md exists"
+
+      - name: Assert custom report title is in output
+        run: |
+          echo "Checking custom report title..."
+          if ! grep -q "My Custom Report Title" "$GITHUB_WORKSPACE/custom_metrics_output.md"; then
+            echo "FAIL: Custom report title not found in output"
+            cat "$GITHUB_WORKSPACE/custom_metrics_output.md"
+            exit 1
+          fi
+          echo "PASS: Custom report title found in output"

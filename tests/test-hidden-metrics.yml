@@ -1,0 +1,71 @@
+name: Test hidden metrics options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up git origin reachable inside Docker container
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/act-harness
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+
+      - id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue created:2024-02-01..2024-02-28"
+          REPORT_TITLE: "Hidden Metrics Test Report"
+          OUTPUT_FILE: "issue_metrics.md"
+          HIDE_TIME_TO_CLOSE: "true"
+          HIDE_TIME_TO_FIRST_RESPONSE: "true"
+          HIDE_TIME_TO_ANSWER: "true"
+          HIDE_TIME_TO_FIRST_REVIEW: "true"
+          HIDE_AUTHOR: "true"
+          HIDE_ASSIGNEE: "true"
+          HIDE_ITEMS_CLOSED_COUNT: "true"
+          HIDE_LABEL_METRICS: "true"
+
+      - name: Assert output file was created
+        run: |
+          echo "Checking for issue_metrics.md..."
+          if [ ! -f "$GITHUB_WORKSPACE/issue_metrics.md" ]; then
+            echo "FAIL: issue_metrics.md was not created"
+            exit 1
+          fi
+          echo "PASS: issue_metrics.md exists"
+
+      - name: Assert report title is present
+        run: |
+          echo "Checking report title..."
+          if ! grep -q "Hidden Metrics Test Report" "$GITHUB_WORKSPACE/issue_metrics.md"; then
+            echo "FAIL: Report title not found"
+            cat "$GITHUB_WORKSPACE/issue_metrics.md"
+            exit 1
+          fi
+          echo "PASS: Report title found"
+
+      - name: Assert hidden metrics are not in output
+        run: |
+          echo "Checking that hidden metrics are not present..."
+          CONTENT=$(cat "$GITHUB_WORKSPACE/issue_metrics.md")
+          echo "Content:"
+          echo "$CONTENT"
+          # Time to Close should be hidden
+          if echo "$CONTENT" | grep -qi "Time to Close"; then
+            echo "FAIL: 'Time to Close' should be hidden but was found in output"
+            exit 1
+          fi
+          # Time to First Response should be hidden
+          if echo "$CONTENT" | grep -qi "Time to First Response"; then
+            echo "FAIL: 'Time to First Response' should be hidden but was found in output"
+            exit 1
+          fi
+          echo "PASS: Hidden metrics are not present in output"
