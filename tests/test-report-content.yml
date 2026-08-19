@@ -1,0 +1,42 @@
+name: Test report content
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue is:closed created:2024-01-01..2024-01-31"
+          REPORT_TITLE: "My Custom Report Title"
+      - name: Assert output file exists
+        run: |
+          echo "Checking for issue_metrics.md..."
+          if [ ! -f issue_metrics.md ]; then
+            echo "FAIL: issue_metrics.md was not created"
+            exit 1
+          fi
+          echo "PASS: issue_metrics.md exists"
+      - name: Assert report contains custom title
+        run: |
+          echo "Checking report title..."
+          if ! grep -q "My Custom Report Title" issue_metrics.md; then
+            echo "FAIL: report does not contain expected title 'My Custom Report Title'"
+            echo "--- File contents ---"
+            cat issue_metrics.md
+            exit 1
+          fi
+          echo "PASS: report contains expected title"
+      - name: Assert report is valid markdown
+        run: |
+          echo "Checking report is non-empty markdown..."
+          if [ ! -s issue_metrics.md ]; then
+            echo "FAIL: issue_metrics.md is empty"
+            exit 1
+          fi
+          echo "PASS: issue_metrics.md is non-empty"
+          echo "--- File contents ---"
+          cat issue_metrics.md

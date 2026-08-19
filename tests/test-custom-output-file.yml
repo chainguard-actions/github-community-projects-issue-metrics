@@ -1,0 +1,50 @@
+name: Test custom output file - issue metrics with custom output path
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run issue-metrics action with custom output file
+        id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue created:2000-01-01..2000-01-02"
+          REPORT_TITLE: "Custom Output Report"
+          OUTPUT_FILE: "custom_metrics_report.md"
+
+      - name: Assert custom output file was created
+        run: |
+          echo "Checking for custom_metrics_report.md..."
+          if [ ! -f "custom_metrics_report.md" ]; then
+            echo "FAIL: custom_metrics_report.md was not created"
+            exit 1
+          fi
+          echo "PASS: custom_metrics_report.md exists"
+
+      - name: Assert default output file was NOT created
+        run: |
+          echo "Checking that default issue_metrics.md was not created..."
+          if [ -f "issue_metrics.md" ]; then
+            echo "FAIL: default issue_metrics.md should not exist when OUTPUT_FILE is set"
+            exit 1
+          fi
+          echo "PASS: default issue_metrics.md was not created"
+
+      - name: Assert custom output file contains report title
+        run: |
+          echo "Checking report title in custom output..."
+          if ! grep -q "Custom Output Report" custom_metrics_report.md; then
+            echo "FAIL: Report title not found in custom output file"
+            cat custom_metrics_report.md
+            exit 1
+          fi
+          echo "PASS: Report title found in custom output file"
+
+      - name: Show output file contents
+        run: |
+          echo "=== custom_metrics_report.md contents ==="
+          cat custom_metrics_report.md

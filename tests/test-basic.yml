@@ -1,0 +1,48 @@
+name: Test basic usage - issue metrics with results
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run issue-metrics action
+        id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_QUERY: "repo:github-community-projects/issue-metrics is:issue created:>2023-01-01 created:<2023-12-31"
+          REPORT_TITLE: "Test Issue Metrics Report"
+          OUTPUT_FILE: "issue_metrics.md"
+          HIDE_TIME_TO_CLOSE: "false"
+          HIDE_TIME_TO_FIRST_RESPONSE: "false"
+
+      - name: Assert output file was created
+        run: |
+          echo "Checking for issue_metrics.md..."
+          if [ ! -f "issue_metrics.md" ]; then
+            echo "FAIL: issue_metrics.md was not created"
+            exit 1
+          fi
+          echo "PASS: issue_metrics.md exists"
+
+      - name: Assert output file contains report title
+        run: |
+          echo "Checking report title in output..."
+          if ! grep -q "Test Issue Metrics Report" issue_metrics.md; then
+            echo "FAIL: Report title not found in output"
+            cat issue_metrics.md
+            exit 1
+          fi
+          echo "PASS: Report title found in output"
+
+      - name: Assert output file contains expected markdown structure
+        run: |
+          echo "Checking markdown structure..."
+          if ! grep -q "Time to first response" issue_metrics.md; then
+            echo "FAIL: Expected metric headers not found in output"
+            cat issue_metrics.md
+            exit 1
+          fi
+          echo "PASS: Markdown structure looks correct"
