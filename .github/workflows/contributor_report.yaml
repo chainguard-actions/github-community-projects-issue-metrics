@@ -1,0 +1,51 @@
+name: Monthly contributor report
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "3 2 1 * *"
+
+permissions:
+  contents: read
+
+jobs:
+  contributor_report:
+    name: contributor report
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        with:
+          egress-policy: audit
+
+      - name: Get dates for last month
+        shell: bash
+        run: |
+          # Calculate the first day of the previous month
+          start_date=$(date -d "last month" +%Y-%m-01)
+
+          # Calculate the last day of the previous month
+          end_date=$(date -d "$start_date +1 month -1 day" +%Y-%m-%d)
+
+          #Set an environment variable with the date range
+          echo "START_DATE=$start_date" >> "$GITHUB_ENV"
+          echo "END_DATE=$end_date" >> "$GITHUB_ENV"
+
+      - name: Run contributor action
+        uses: github-community-projects/contributors@e1118bad7bd389d10b53b363142a11245cbaa9f8 # v2.0.19
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          START_DATE: ${{ env.START_DATE }}
+          END_DATE: ${{ env.END_DATE }}
+          REPOSITORY: github-community-projects/issue-metrics
+          SPONSOR_INFO: "true"
+
+      - name: Create issue
+        uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710 # v6.0.0
+        with:
+          title: Monthly contributor report
+          token: ${{ secrets.GITHUB_TOKEN }}
+          content-filepath: ./contributors.md
+          assignees: zkoppert

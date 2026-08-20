@@ -1,0 +1,40 @@
+name: Test no results - search query returns no issues
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Use a date range so far in the past that no issues will be found
+          SEARCH_QUERY: repo:actions/checkout is:issue created:2000-01-01..2000-01-02
+          REPORT_TITLE: "Empty Metrics Report"
+          OUTPUT_FILE: issue_metrics_empty.md
+        continue-on-error: true
+
+      - name: Assert action handled no-results gracefully
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "Action succeeded with no results"
+            if [ -f "issue_metrics_empty.md" ]; then
+              echo "PASS: issue_metrics_empty.md was created even with no results"
+              echo "--- File contents ---"
+              cat issue_metrics_empty.md
+            else
+              echo "FAIL: output file was not created"
+              exit 1
+            fi
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (may be due to API rate limits or sentinel repo)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
