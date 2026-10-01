@@ -1,0 +1,41 @@
+name: Test hide metrics options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        env:
+          SEARCH_QUERY: repo:actions/checkout is:issue created:2000-01-01..2000-01-02
+          GH_TOKEN: ${{ github.token }}
+          HIDE_TIME_TO_CLOSE: "true"
+          HIDE_TIME_TO_FIRST_RESPONSE: "true"
+          HIDE_AUTHOR: "true"
+          HIDE_ITEMS_CLOSED_COUNT: "true"
+          REPORT_TITLE: Hidden Metrics Report
+
+      - name: Assert output file was created
+        run: |
+          echo "Checking for issue_metrics.md..."
+          if [ ! -f "$GITHUB_WORKSPACE/issue_metrics.md" ]; then
+            echo "FAIL: issue_metrics.md was not created"
+            exit 1
+          fi
+          echo "PASS: issue_metrics.md exists"
+          echo "--- Contents ---"
+          cat "$GITHUB_WORKSPACE/issue_metrics.md"
+
+      - name: Assert report title is present
+        run: |
+          CONTENT=$(cat "$GITHUB_WORKSPACE/issue_metrics.md")
+          echo "content: $CONTENT"
+          if echo "$CONTENT" | grep -q "Hidden Metrics Report"; then
+            echo "PASS: report title found in output"
+          else
+            echo "FAIL: report title 'Hidden Metrics Report' not found in output"
+            exit 1
+          fi

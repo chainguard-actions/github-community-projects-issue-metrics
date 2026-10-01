@@ -1,0 +1,38 @@
+name: Test custom report title and output file
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        env:
+          SEARCH_QUERY: repo:actions/checkout is:issue created:2000-01-01..2000-01-02
+          GH_TOKEN: ${{ github.token }}
+          REPORT_TITLE: My Custom Metrics Report
+          OUTPUT_FILE: custom_metrics.md
+
+      - name: Assert custom output file was created
+        run: |
+          echo "Checking for custom_metrics.md..."
+          if [ ! -f "$GITHUB_WORKSPACE/custom_metrics.md" ]; then
+            echo "FAIL: custom_metrics.md was not created"
+            exit 1
+          fi
+          echo "PASS: custom_metrics.md exists"
+          echo "--- Contents ---"
+          cat "$GITHUB_WORKSPACE/custom_metrics.md"
+
+      - name: Assert custom report title is in output
+        run: |
+          CONTENT=$(cat "$GITHUB_WORKSPACE/custom_metrics.md")
+          echo "content: $CONTENT"
+          if echo "$CONTENT" | grep -q "My Custom Metrics Report"; then
+            echo "PASS: custom report title found in output"
+          else
+            echo "FAIL: custom report title 'My Custom Metrics Report' not found in output"
+            exit 1
+          fi
